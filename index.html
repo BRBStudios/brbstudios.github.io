@@ -3,6 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  // Pick the theme before the page paints: saved choice first, otherwise the device setting.
+  (function () {
+    var choice = "system";
+    try { choice = localStorage.getItem("brb-theme") || "system"; } catch (e) {}
+    var dark = choice === "dark" ||
+      (choice !== "light" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  })();
+</script>
 <title>BRB Studios | BrettRB</title>
 <meta name="description" content="BrettRB: gaming videos, streams, clips and vlogs from an engineering student who also writes code. All channels and socials in one place.">
 <meta property="og:title" content="BRB Studios | BrettRB">
@@ -26,6 +36,9 @@
     --screen: #0F1A2C;     /* the monitor */
     --signal: #DB3324;     /* record light */
     --white: #FBFCF4;
+    --signal-fill: #DB3324;
+    --shadow: #16243A;
+    color-scheme: light;
 
     --display: "Bricolage Grotesque", "Arial Narrow", sans-serif;
     --body: "IBM Plex Sans", system-ui, sans-serif;
@@ -33,6 +46,21 @@
 
     --wrap: 1120px;
     --line: 2px solid var(--ink);
+  }
+
+  /* Dark mode: the same sheet as a blueprint */
+  :root[data-theme="dark"] {
+    --paper: #0F1B2E;
+    --grid-minor: #15253D;
+    --grid-major: #1E3352;
+    --ink: #E4E9D4;
+    --ink-soft: #A5B1C3;
+    --screen: #070D18;
+    --signal: #F2604F;
+    --signal-fill: #DB3324;
+    --white: #17263C;
+    --shadow: #050A14;
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
@@ -70,9 +98,36 @@
     font-family: var(--display); font-weight: 800; font-size: 1.25rem;
     letter-spacing: -0.01em; text-decoration: none; white-space: nowrap;
   }
-  .topnav { display: flex; gap: 22px; flex-wrap: wrap; font-weight: 500; font-size: 0.95rem; }
+  .topnav { display: flex; gap: 22px; flex-wrap: wrap; font-weight: 500; font-size: 0.95rem; margin-left: auto; }
   .topnav a { text-decoration: none; border-bottom: 2px solid transparent; }
   .topnav a:hover { border-bottom-color: var(--signal); }
+
+  /* Settings menu */
+  .settings { position: relative; margin-left: 4px; }
+  .settings summary {
+    list-style: none; cursor: pointer; display: grid; place-items: center;
+    width: 38px; height: 38px; border: 1.5px solid var(--ink); border-radius: 4px;
+    background: var(--white); color: var(--ink);
+  }
+  .settings summary::-webkit-details-marker { display: none; }
+  .settings summary:hover, .settings[open] summary { background: var(--ink); color: var(--white); }
+  .settings summary:focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; }
+  .settings svg { display: block; }
+  .settings-panel {
+    position: absolute; right: 0; top: calc(100% + 10px); z-index: 20; width: 248px;
+    padding: 16px; background: var(--white); border: var(--line); border-radius: 6px;
+    box-shadow: 6px 6px 0 var(--shadow);
+  }
+  .settings-panel fieldset { border: 0; margin: 0; padding: 0; }
+  .settings-panel legend { padding: 0; margin-bottom: 10px; font-weight: 600; font-size: 0.92rem; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1.5px solid var(--ink); border-radius: 4px; overflow: hidden; }
+  .seg button {
+    font: 500 0.88rem var(--body); padding: 8px 4px; cursor: pointer;
+    background: transparent; color: var(--ink); border: 0;
+  }
+  .seg button + button { border-left: 1.5px solid var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--white); }
+  .seg button:focus-visible { outline: 3px solid var(--signal); outline-offset: -3px; }
 
   /* ---------- Hero ---------- */
   .hero {
@@ -94,11 +149,11 @@
     display: inline-block; font: 600 1rem var(--body); text-decoration: none; cursor: pointer;
     padding: 12px 20px; border: var(--line); border-radius: 4px;
     background: var(--white); color: var(--ink);
-    box-shadow: 4px 4px 0 var(--ink);
+    box-shadow: 4px 4px 0 var(--shadow);
     transition: transform .12s, box-shadow .12s;
   }
-  .btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
-  .btn-primary { background: var(--signal); color: #fff; }
+  .btn:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--shadow); }
+  .btn-primary { background: var(--signal-fill); color: #fff; }
 
   /* The monitor, drawn like a dimensioned part */
   .frame { position: relative; padding: 34px 0 0 34px; }
@@ -126,7 +181,7 @@
 
   .screen {
     background: var(--screen); border: var(--line); border-radius: 6px;
-    box-shadow: 8px 8px 0 var(--ink); overflow: hidden;
+    box-shadow: 8px 8px 0 var(--shadow); overflow: hidden;
   }
   .screen iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; }
   .player .nowplaying {
@@ -157,8 +212,8 @@
     transition: background .12s, color .12s;
   }
   .channels a:hover { background: var(--ink); color: var(--white); }
-  .channels a:hover .handle { color: #fff; }
-  .channels a:hover .what { color: #C9D2DF; }
+  .channels a:hover .handle { color: var(--white); }
+  .channels a:hover .what { color: var(--white); opacity: 0.8; }
   .role { font-family: var(--display); font-weight: 800; font-size: 1.5rem; letter-spacing: -0.015em; }
   .handle { font-family: var(--mono); font-weight: 500; color: var(--signal); overflow-wrap: anywhere; }
   .what { color: var(--ink-soft); font-size: 0.98rem; }
@@ -169,7 +224,7 @@
   .socials a {
     display: block; padding: 18px 20px; text-decoration: none;
     background: var(--white); border: var(--line); border-radius: 4px;
-    box-shadow: 4px 4px 0 var(--ink);
+    box-shadow: 4px 4px 0 var(--shadow);
     transition: transform .12s, box-shadow .12s;
   }
   .socials a:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--signal); }
@@ -181,7 +236,7 @@
   .insta a {
     display: block; height: 100%; text-decoration: none;
     background: var(--white); border: var(--line); border-radius: 4px; overflow: hidden;
-    box-shadow: 4px 4px 0 var(--ink);
+    box-shadow: 4px 4px 0 var(--shadow);
     transition: transform .12s, box-shadow .12s;
   }
   .insta a:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--signal); }
@@ -205,7 +260,7 @@
   }
   .copy:hover { background: var(--ink); color: var(--white); }
 
-  form { background: var(--white); border: var(--line); border-radius: 6px; box-shadow: 8px 8px 0 var(--ink); padding: 28px; }
+  form { background: var(--white); border: var(--line); border-radius: 6px; box-shadow: 8px 8px 0 var(--shadow); padding: 28px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .field { margin-bottom: 18px; }
   label { display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 6px; }
@@ -245,13 +300,15 @@
     .titleblock div:nth-child(n+2) { border-top: var(--line); }
   }
   @media (max-width: 520px) {
-    .topnav { gap: 14px; font-size: 0.88rem; }
+    .topbar { flex-wrap: wrap; }
+    .topnav { gap: 18px; font-size: 0.92rem; order: 3; width: 100%; margin-left: 0; }
+    .settings { margin-left: auto; }
     .frame { padding: 0; }
     .player .nowplaying { margin-left: 0; }
     .dim { display: none; }
-    .screen { box-shadow: 5px 5px 0 var(--ink); }
+    .screen { box-shadow: 5px 5px 0 var(--shadow); }
     .socials, .row, .insta { grid-template-columns: minmax(0, 1fr); }
-    form { padding: 20px; box-shadow: 5px 5px 0 var(--ink); }
+    form { padding: 20px; box-shadow: 5px 5px 0 var(--shadow); }
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
@@ -271,6 +328,22 @@
     <a href="sponsors.html">Sponsors</a>
     <a href="faq.html">FAQ</a>
   </nav>
+  <details class="settings" id="settings">
+    <summary aria-label="Settings" title="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </summary>
+    <div class="settings-panel">
+      <fieldset>
+        <legend>Appearance</legend>
+        <div class="seg">
+          <button type="button" data-theme-choice="system">System</button>
+          <button type="button" data-theme-choice="light">Light</button>
+          <button type="button" data-theme-choice="dark">Dark</button>
+        </div>
+      </fieldset>
+      <!-- Add future settings here as more <fieldset> blocks -->
+    </div>
+  </details>
 </header>
 
 <main id="top">
@@ -454,6 +527,36 @@
     })
     .catch(function () { /* feed unavailable: section stays hidden */ });
 
+
+  /* ---------- Settings menu: light / dark / system ---------- */
+  (function () {
+    const menu = document.getElementById("settings");
+    const buttons = menu.querySelectorAll("[data-theme-choice]");
+    const system = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+    let choice = "system";
+    try { choice = localStorage.getItem("brb-theme") || "system"; } catch (e) {}
+
+    function apply() {
+      const dark = choice === "dark" || (choice === "system" && system && system.matches);
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      buttons.forEach(function (b) {
+        b.setAttribute("aria-pressed", b.dataset.themeChoice === choice ? "true" : "false");
+      });
+    }
+    buttons.forEach(function (b) {
+      b.addEventListener("click", function () {
+        choice = b.dataset.themeChoice;
+        try { localStorage.setItem("brb-theme", choice); } catch (e) {}
+        apply();
+      });
+    });
+    // Follow the device if it switches while the page is open
+    if (system && system.addEventListener) system.addEventListener("change", apply);
+    // Close the menu on an outside click or Escape
+    document.addEventListener("click", function (e) { if (!menu.contains(e.target)) menu.open = false; });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") menu.open = false; });
+    apply();
+  })();
 </script>
 </body>
 </html>
